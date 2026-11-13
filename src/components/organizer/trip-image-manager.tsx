@@ -9,6 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import {
+  getCombinedImageSizeValidationError,
   getImageValidationError,
   MAX_TRIP_IMAGES,
 } from "@/lib/trip-images/rules";
@@ -109,6 +110,11 @@ export function TripImageManager({
       setError("Choose an image before uploading.");
       return;
     }
+    const combinedSizeError = getCombinedImageSizeValidationError([file]);
+    if (combinedSizeError) {
+      setError(combinedSizeError);
+      return;
+    }
     if (altText.trim().length === 0 || altText.trim().length > 500) {
       setError("Add alternative text between 1 and 500 characters.");
       return;
@@ -200,8 +206,8 @@ export function TripImageManager({
             type="file"
           />
           <p className="mt-2 text-xs leading-5 text-[#73776e]">
-            JPEG, PNG, or WebP; maximum 50 MiB. Up to {MAX_TRIP_IMAGES} images
-            per trip.
+            JPEG, PNG, or WebP; maximum 3.5 MiB per image and per upload.
+            Up to {MAX_TRIP_IMAGES} images per trip.
           </p>
         </div>
 

@@ -161,7 +161,24 @@ describe("trip image management service", () => {
     expect(harness.storage.upload).not.toHaveBeenCalled();
   });
 
-  it("rejects a file that exceeds 50 MiB before uploading", async () => {
+  it("accepts an image below 3.5 MiB", async () => {
+    const harness = makeHarness();
+    const bytes = new Uint8Array(MAX_TRIP_IMAGE_BYTES - 1);
+    bytes.set(PNG_BYTES);
+    const file = new File([bytes], "large.png", { type: "image/png" });
+
+    await expect(
+      harness.service.upload({
+        tripId: TRIP_ID,
+        userId: USER_ID,
+        file,
+        altText: "A large image",
+      }),
+    ).resolves.toMatchObject({ id: IMAGE_ID });
+    expect(harness.storage.upload).toHaveBeenCalledOnce();
+  });
+
+  it("rejects a file that exceeds 3.5 MiB before uploading", async () => {
     const harness = makeHarness();
     const file = new File(
       [new Uint8Array(MAX_TRIP_IMAGE_BYTES + 1)],

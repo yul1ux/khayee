@@ -4,6 +4,7 @@ import {
   TripImageServiceError,
 } from "@/lib/trip-images/service";
 import {
+  getCombinedImageSizeValidationError,
   MAX_TRIP_IMAGE_BYTES,
   MAX_TRIP_IMAGE_REQUEST_BYTES,
 } from "@/lib/trip-images/rules";
@@ -178,16 +179,35 @@ export async function POST(
     } catch {
       return jsonError("The multipart request body is invalid.", 400);
     }
-    const file = formData.get("file");
+    const formFiles = formData.getAll("file");
     const altText = formData.get("altText");
 
-    if (!(file instanceof File)) {
+    const files: File[] = [];
+    for (const formFile of formFiles) {
+      if (!(formFile instanceof File)) {
+        return jsonError("Choose an image to upload.", 400);
+      }
+      files.push(formFile);
+    }
+    if (files.length === 0) {
       return jsonError("Choose an image to upload.", 400);
+    }
+
+    const combinedSizeError = getCombinedImageSizeValidationError(files);
+    if (combinedSizeError) {
+      return jsonError(combinedSizeError, 413);
+    }
+    if (files.length !== 1) {
+      return jsonError("Upload one image at a time.", 400);
     }
     if (typeof altText !== "string") {
       return jsonError("Add alternative text for this image.", 400);
     }
 
+    const file = files[0];
+    if (!file) {
+      return jsonError("Choose an image to upload.", 400);
+    }
     const service = createService(supabase);
     const image = await service.upload({
       tripId,

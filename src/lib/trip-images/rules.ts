@@ -1,6 +1,6 @@
-export const MAX_TRIP_IMAGE_BYTES = 50 * 1024 * 1024;
-export const MAX_TRIP_IMAGE_REQUEST_BYTES =
-  MAX_TRIP_IMAGE_BYTES + 64 * 1024;
+export const MAX_TRIP_IMAGE_BYTES = 3.5 * 1024 * 1024;
+export const MAX_TRIP_IMAGE_TOTAL_BYTES = MAX_TRIP_IMAGE_BYTES;
+export const MAX_TRIP_IMAGE_REQUEST_BYTES = 4 * 1024 * 1024;
 export const MAX_TRIP_IMAGES = 10;
 
 export const IMAGE_EXTENSIONS = {
@@ -17,6 +17,15 @@ export function isTripImageMimeType(
   return Object.hasOwn(IMAGE_EXTENSIONS, mimeType);
 }
 
+export function getCombinedImageSizeValidationError(
+  files: readonly Blob[],
+): string | null {
+  const totalBytes = files.reduce((total, file) => total + file.size, 0);
+  return totalBytes > MAX_TRIP_IMAGE_TOTAL_BYTES
+    ? "Images must total 3.5 MiB or less per upload."
+    : null;
+}
+
 export async function getImageValidationError(
   file: Blob,
 ): Promise<string | null> {
@@ -29,7 +38,7 @@ export async function getImageValidationError(
   }
 
   if (file.size > MAX_TRIP_IMAGE_BYTES) {
-    return "Images must be 50 MiB or smaller.";
+    return "Images must be 3.5 MiB or smaller.";
   }
 
   const header = new Uint8Array(await file.slice(0, 12).arrayBuffer());

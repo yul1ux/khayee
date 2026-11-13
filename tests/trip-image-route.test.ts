@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "../src/app/api/organizer/trips/[tripId]/images/route";
 import {
+  MAX_TRIP_IMAGE_BYTES,
   MAX_TRIP_IMAGE_REQUEST_BYTES,
+  MAX_TRIP_IMAGE_TOTAL_BYTES,
 } from "../src/lib/trip-images/rules";
 
 const mocks = vi.hoisted(() => ({
@@ -51,6 +53,12 @@ function makePngFormData() {
   formData.set("file", new File([PNG_BYTES], "trail.png", { type: "image/png" }));
   formData.set("altText", "A trail through the forest");
   return formData;
+}
+
+function makePngFile(size: number, name: string) {
+  const bytes = new Uint8Array(size);
+  bytes.set(PNG_BYTES);
+  return new File([bytes], name, { type: "image/png" });
 }
 
 beforeEach(() => {
@@ -143,7 +151,43 @@ describe("trip image upload route", () => {
 
     expect(response.status).toBe(413);
     expect(cancelCalled).toBe(true);
-    expect(chunksProduced).toBeLessThan(100);
+    expect(chunksProduced).toBeLessThan(10);
+    expect(mocks.storageUpload).not.toHaveBeenCalled();
+  });
+
+  it("accepts an image below 3.5 MiB with multipart overhead under 4 MiB", async () => {
+    const formData = new FormData();
+    const file = makePngFile(MAX_TRIP_IMAGE_BYTES - 1, "large.png");
+    formData.set("file", file);
+    formData.set("altText", "A large trail image");
+    const request = makeRequest(formData);
+    const requestBodyBytes = (await request.clone().arrayBuffer()).byteLength;
+
+    expect(requestBodyBytes).toBeGreaterThan(file.size);
+    expect(requestBodyBytes).toBeLessThanOrEqual(MAX_TRIP_IMAGE_REQUEST_BYTES);
+    expect(request.headers.has("content-length")).toBe(false);
+
+    const response = await POST(request, routeContext());
+
+    expect(response.status).toBe(201);
+    expect(mocks.storageUpload).toHaveBeenCalledOnce();
+  });
+
+  it("rejects combined image bytes above 3.5 MiB", async () => {
+    const formData = new FormData();
+    formData.append(
+      "file",
+      makePngFile(Math.floor(MAX_TRIP_IMAGE_TOTAL_BYTES / 2) + 1, "first.png"),
+    );
+    formData.append(
+      "file",
+      makePngFile(Math.floor(MAX_TRIP_IMAGE_TOTAL_BYTES / 2) + 1, "second.png"),
+    );
+    formData.set("altText", "Two large images");
+
+    const response = await POST(makeRequest(formData), routeContext());
+
+    expect(response.status).toBe(413);
     expect(mocks.storageUpload).not.toHaveBeenCalled();
   });
 
