@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f6f1;
+  --foreground: #202821;
+  --forest: #244734;
+  --forest-deep: #173625;
+  --moss: #67754d;
+  --sand: #e8e4d8;
+  --muted: #73776e;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: #d7ddc9;
+  color: var(--forest-deep);
+}
+
+.page-shell {
+  margin-inline: auto;
+  max-width: 1280px;
+  padding-inline: 32px;
+}
+
+.eyebrow {
+  color: var(--moss);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.section-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2.1rem, 3.5vw, 3.25rem);
+  font-weight: 400;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+}
+
+.focus-ring:focus-visible {
+  outline: 3px solid #d5c27b;
+  outline-offset: 3px;
+}
+
+.hero-photo {
+  background-image:
+    linear-gradient(90deg, rgb(15 31 22 / 78%) 0%, rgb(15 31 22 / 50%) 48%, rgb(15 31 22 / 14%) 100%),
+    linear-gradient(0deg, rgb(15 31 22 / 20%), transparent 50%),
+    url("https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=2200&q=85");
+  background-position: center 54%;
+  background-size: cover;
+}
+
+.destination-photo,
+.trip-photo,
+.category-photo {
+  background-position: center;
+  background-size: cover;
+  transition: transform 500ms ease;
+}
+
+.image-card:hover .trip-photo,
+.image-card:hover .destination-photo,
+.image-card:hover .category-photo {
+  transform: scale(1.035);
+}
+
+.category-photo::after,
+.destination-photo::after {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgb(14 28 20 / 78%), transparent 65%);
+  content: "";
+}
+
+.organizer-photo {
+  background-image:
+    linear-gradient(90deg, rgb(25 53 37 / 12%), rgb(25 53 37 / 6%)),
+    url("https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=85");
+  background-position: center;
+  background-size: cover;
+}
+
+@media (max-width: 767px) {
+  .page-shell {
+    padding-inline: 20px;
+  }
+
+  .hero-photo {
+    background-position: 58% center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}

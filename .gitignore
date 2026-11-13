@@ -1,0 +1,36 @@
+# Environment files
+.env*
+!.env.example
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js build output
+.next/
+
+# Build and test output
+out/
+build/
+dist/
+coverage/
+
+# Caches
+.cache/
+
+# Logs
+*.log
+*.tmp
+*.temp
+
+# Deployment
+.vercel
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Operating system and certificates
+.DS_Store
+*.pem
